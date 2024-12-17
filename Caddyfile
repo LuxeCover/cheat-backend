@@ -1,0 +1,11 @@
+domainName {
+	reverse_proxy Vps ip/ docker container ip
+}
+
+
+
+
+
+
+
+

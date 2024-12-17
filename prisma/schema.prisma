@@ -1,0 +1,27 @@
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+model User {
+    id         String   @id @default(cuid())
+    email      String   @unique
+    username   String?
+    discord_id String?
+    avatar     String?
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
+}
+
+model SteamAccount {
+    steam_id  String   @id
+    username  String?
+    name      String?
+    profile   String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

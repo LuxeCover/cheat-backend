@@ -1,13 +1,15 @@
+import 'reflect-metadata';
 import createAppServer from "./server";
+import LoggerInstance from './utils/logger';
 
 
 async function startServer() {
     const server = await createAppServer();
-    server.listen(4000, () => { }).on('error', (error) => {
+    server.listen(5000, () => { }).on('error', (error) => {
         if (error.message === 'EADDRINUSE') {
             process.exit(1)
         } else {
-            throw error;   
+            throw error;
         }
     })
 
@@ -15,7 +17,7 @@ async function startServer() {
 
 
 startServer().then(() => {
-    console.log('server is running');
+    LoggerInstance.info('server is running');
 }).catch((error) => {
-    console.log('server is running');
+    LoggerInstance.info(`server error ${error}`);
 })

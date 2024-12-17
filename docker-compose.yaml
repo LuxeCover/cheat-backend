@@ -1,0 +1,69 @@
+
+services:
+# app services
+  api:
+    build:
+      context: ./
+    deploy:
+      replicas: 1
+    depends_on:
+    - redis  
+    - postgresql
+    restart: always
+
+#  REVERSE PROXIES
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./conf:/etc/nginx/conf.d
+    depends_on:
+      - api
+    restart: always
+
+  caddy:
+    container_name: caddy
+    image: caddy:2.7.6-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    depends_on:
+      - nginx
+    restart: always  
+
+# DATABASES
+  redis:
+    image: redis:alpine
+    container_name: redis
+    command: redis-server --save 60 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_volume_data:/data 
+    restart: always
+
+  postgresql:
+    container_name: postgresql
+    build: 
+      context: ./postgresql
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}   
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  
+    ports:
+      - "5432:5432"
+    restart: always
+
+volumes:
+  redis_volume_data:
+  postgres_data:  
+
+networks:
+  proxy_connect:
+    external: true
