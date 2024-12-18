@@ -10,7 +10,6 @@ export default async function expressApp() {
 
         res.send({ 'test': 'helllo' })
 
-
     });
     app.use(express.json())
     app.use(appRoutes());

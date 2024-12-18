@@ -11,3 +11,9 @@ export class BaseException extends Error {
         this.stack = stack;
     }
 }
+
+
+
+export function sendError(message: string, statusCode: number, error?: any){
+    throw new BaseException(statusCode, message, error)
+}
