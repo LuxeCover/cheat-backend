@@ -8,12 +8,12 @@ import SteamAuth from "node-steam-openid";
 export class SteamAuthService {
     constructor(@Inject('prisma') private readonly prisma: PrismaClient) { }
 
-    public async steamAuthInit(): Promise<String> {
+    public async steamAuthInit(userId: number): Promise<String> {
         const oauth = new SteamAuth(
             {
                 apiKey: '',
                 realm: '',
-                returnUrl: ''
+                returnUrl: `https://getpaidtocheat?userId=${userId}`
             }
         );
         const authUrl = oauth.getRedirectUrl();
@@ -21,7 +21,7 @@ export class SteamAuthService {
         return authUrl;
     };
 
-    public async steamCallBack(token: string) {
+    public async steamCallBack(token: string, userId: number) {
         const oauth = new SteamAuth(
             {
                 apiKey: config.STEAM_KEY as string,
@@ -30,15 +30,16 @@ export class SteamAuthService {
             }
         );
         const user = await oauth.authenticate({})
-        await this.prisma.steamAccount.create({
+        const userDetails = await this.prisma.steamAccount.create({
             data: {
+                userId: userId,
                 steam_id: user.steamid,
                 name: user.name,
                 profile: user.profile,
                 username: user.username
             },
         })
-
+        return userDetails.steam_id;
 
     }
 }

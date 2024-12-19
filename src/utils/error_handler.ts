@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { responseFormat } from "./response_format";
-
+import jwt from 'jsonwebtoken'
 import { DiscordHTTPError } from "discord-oauth2";
 import { PrismaClientInitializationError, PrismaClientKnownRequestError, PrismaClientRustPanicError, PrismaClientUnknownRequestError, PrismaClientValidationError } from "@prisma/client/runtime/library";
 
@@ -9,7 +9,7 @@ import { PrismaClientInitializationError, PrismaClientKnownRequestError, PrismaC
 function errorMiddleware(catchError: any, req: Request, res: Response, next: NextFunction) {
     let status = catchError.statusCode ? catchError.statusCode : 500;
     let errorMessage: string = catchError.message;
-    const trace = process.env.NODE_ENV === 'development' ? catchError.stack : 'No data';
+    const trace = process.env.NODE_ENV === 'development' ? catchError.stack : '';
     if (catchError instanceof PrismaClientKnownRequestError) {
         if (catchError.code === "P2002") {
             errorMessage = 'A user with this email already exists';
@@ -31,19 +31,20 @@ function errorMiddleware(catchError: any, req: Request, res: Response, next: Nex
         errorMessage = "Authentication error"
     }
 
-    // else if (catchError instanceof jwt.JsonWebTokenError) {
-    //     errorMessage = 'Invalid bearer token'
-    //     status = 403;
-    // }
-    // else if (catchError instanceof jwt.TokenExpiredError) {
-    //     errorMessage = 'Authorization token expired'
-    //     status = 403;
-    // }
-    // else if (catchError instanceof jwt.NotBeforeError) {
-    //     errorMessage = 'Authorization token expired'
-    //     status = 403;
-    // } LoggerInstance.error(errorMessage)
-    res.status(status).send(responseFormat(errorMessage,));
+    else if (catchError instanceof jwt.JsonWebTokenError) {
+        errorMessage = 'Invalid bearer token'
+        status = 403;
+    }
+    else if (catchError instanceof jwt.TokenExpiredError) {
+        errorMessage = 'Authorization token expired'
+        status = 403;
+    }
+    else if (catchError instanceof jwt.NotBeforeError) {
+        errorMessage = 'Authorization token expired'
+        status = 403;
+    }
+    //LoggerInstance.error(errorMessage)
+    res.status(status).send(responseFormat(errorMessage, trace));
 }
 
 export default errorMiddleware;

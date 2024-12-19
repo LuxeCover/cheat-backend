@@ -2,18 +2,24 @@ import { Router } from 'express'
 import asyncHandler from '../../utils/async_handler';
 import Container from 'typedi';
 import { responseFormat } from '../../utils/response_format';
-import { SteamAuthService } from '../../services/authentication/steam_auth';
 import { PayOutService } from '../../services/payout/payout';
+import { sendError } from '../../exceptions/base_exception';
+import { PaginationValidate } from '../../interface/payout';
 
 const router = Router();
 
 
-export default function payout(app: Router) {
+export default function payoutRoute(app: Router) {
     app.use('/payout', router);
-    const discordAuth: PayOutService = Container.get('payout');
+    const discordAuth: PayOutService = Container.get('payoutService');
 
-    router.get('/:userId', asyncHandler(async (req, res, next) => {
-        const payout = await discordAuth.getPayouts(1);
+    router.get('/get', asyncHandler(async (req, res, next) => {
+        const validate = PaginationValidate.validate(req.query);
+        if (validate.error) {
+            return sendError(validate.error.message, 400);
+        }
+        const userId = req.userId;
+        const payout = await discordAuth.getPayouts(userId, validate.value);
         res.send(responseFormat("Request successful", payout)).status(200)
     }));
 

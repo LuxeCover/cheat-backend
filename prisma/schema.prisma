@@ -9,24 +9,28 @@ generator client {
 
 // Authentication
 model User {
-    id         Int       @id @default(autoincrement())
-    email      String    @unique
-    username   String?
-    discord_id String?
-    avatar     String?
-    earnings   Earnings[]
-    payouts    Payout[]
-    createdAt  DateTime  @default(now())
-    updatedAt  DateTime  @updatedAt
+    id           Int            @id @default(autoincrement())
+    email        String         @unique
+    username     String?
+    discord_id   String?
+    avatar       String?
+    earnings     Earnings[]
+    payouts      Payout[]
+    createdAt    DateTime       @default(now())
+    updatedAt    DateTime       @updatedAt
+    steamAccount SteamAccount[]
+    RedeemedKey  RedeemedKey[]
 }
 
 model SteamAccount {
     steam_id  String   @id
+    userId    Int?
     username  String?
     name      String?
     profile   String?
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+    user      User?     @relation(fields: [userId], references: [id])
 }
 
 model Earnings {
@@ -36,23 +40,42 @@ model Earnings {
     description String?
     createdAt   DateTime @default(now())
     updatedAt   DateTime @updatedAt
-    isWithdrawn  Boolean  @default(false)
-    user User @relation(fields: [userId], references: [id])
-    payouts Payout[]
+    isWithdrawn Boolean  @default(false)
+    user        User     @relation(fields: [userId], references: [id])
+    payouts     Payout[]
 }
 
 model Payout {
     id         Int      @id @default(autoincrement())
     userId     Int
-    earningsId Int? 
+    earningsId Int?
     amount     Decimal
     status     String
     createdAt  DateTime @default(now())
     updatedAt  DateTime @updatedAt
 
-    user User @relation(fields: [userId], references: [id])
+    user    User      @relation(fields: [userId], references: [id])
     earning Earnings? @relation(fields: [earningsId], references: [id])
 
     @@index([earningsId])
     @@index([userId])
+}
+
+model Key {
+    id          Int           @id @default(autoincrement())
+    key         String        @unique
+    game        String
+    createdAt   DateTime      @default(now())
+    expiresAt   DateTime
+    RedeemedKey RedeemedKey[]
+}
+
+model RedeemedKey {
+    id         Int      @id @default(autoincrement())
+    userId     Int
+    keyId      Int
+    redeemedAt DateTime @default(now())
+    user       User     @relation(fields: [userId], references: [id])
+    key        Key      @relation(fields: [keyId], references: [id])
+    createdAt  DateTime @default(now())
 }
