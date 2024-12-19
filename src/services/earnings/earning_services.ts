@@ -7,24 +7,8 @@ import { sendError } from "../../exceptions/base_exception";
 export class EarningService {
     constructor(@Inject('prisma') private readonly prisma: PrismaClient) { }
 
-    /**
-     * getEarnings
-     */
-    public getEarnings(userId: number) {
 
-    }
     public async topEarnersList() {
-        // const topEarners = await this.prisma.earnings.groupBy({
-        //     by: ['userId'],
-        //     _sum: {
-        //         amount: true,
-        //     },
-        //     orderBy: {
-        //         _sum: { amount: 'desc' }
-        //     },
-        // })
-
-        // return topEarners;
         const earningsWithUser = await this.prisma.earnings.groupBy({
             by: ['userId'],
             _sum: {
@@ -36,7 +20,6 @@ export class EarningService {
                 },
             },
         });
-
         const earningsWithUserDetails = await Promise.all(
             earningsWithUser.map(async (earning) => {
                 const user = await this.prisma.user.findUnique({
